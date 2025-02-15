@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        button { padding: 10px; background-color: #f44336; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <h2>Welcome!</h2>
+    <p id="welcomeMessage"></p>
+    <button onclick="logout()">Logout</button>
+
+    <script>
+        async function checkAccess() {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            const response = await fetch("/protected", {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById("welcomeMessage").innerText = `Hello, ${data.user}!`;
+            } else {
+                localStorage.removeItem("token");
+                window.location.href = "login.html";
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+        }
+
+        checkAccess();
+    </script>
+</body>
+</html>
+
