@@ -86,10 +86,35 @@ pub fn get_jwt_for_user(user: &models::User) -> String {
 pub fn with_auth(
     required_role: Role,
 ) -> impl Filter<Extract = (String,), Error = Rejection> + Clone {
-    headers_cloned()
-        .map(move |headers: HeaderMap<HeaderValue>| (required_role.clone(), headers))
-        .and_then(authorize)
+    warp::cookie("jwt").and_then(move |jwt: String| {
+        let required_role = required_role.clone();
+        async move {
+        match decode::<models::Claims>(
+            &jwt,
+            &DecodingKey::from_secret(&get_secret()),
+            &Validation::default(),
+        ) {
+            Ok(token_data) => {
+                let claims = token_data.claims;
+                if is_authorized(required_role.clone(), &claims.role) {
+                    Ok(claims.sub)
+                } else {
+                    Err(reject::custom(errors::CustomError::NotAuthorizedError))
+                }
+            }
+            Err(_) => Err(reject::custom(errors::CustomError::InvalidJWTTokenError)),
+        }
+        }
+    })
 }
+
+// pub fn with_auth(
+//     required_role: Role,
+// ) -> impl Filter<Extract = (String,), Error = Rejection> + Clone {
+//     headers_cloned()
+//         .map(move |headers: HeaderMap<HeaderValue>| (required_role.clone(), headers))
+//         .and_then(authorize)
+// }
 
 fn is_authorized(required_role: Role, claims_role: &str) -> bool {
     let claims_role = Role::from_str(claims_role);

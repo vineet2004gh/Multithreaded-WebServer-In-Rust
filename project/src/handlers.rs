@@ -1,6 +1,6 @@
-use crate::{errors, models, security, threadpool::ThreadPool, Result, UsersDb};
+use crate::{errors, models, security, Result, UsersDb};
 use log::{error, info};
-use std::sync::Arc;
+use cookie::{Cookie,SameSite};
 use warp::{
     http::{Response, StatusCode},
     reject, Reply,
@@ -52,8 +52,42 @@ pub async fn login(login_user: models::LoginUser, users_db: UsersDb) -> Result<i
 
     info!("Login success!");
     let token = security::get_jwt_for_user(user);
-    Ok(Response::builder().status(StatusCode::OK).body(token))
+
+    // Create an HTTP‑only cookie with SameSite=Lax
+    let mut jwt_cookie = Cookie::new("jwt", token);
+    jwt_cookie.set_path("/");
+    jwt_cookie.set_http_only(true);
+    jwt_cookie.set_same_site(SameSite::Lax);
+
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .header("set-cookie", jwt_cookie.to_string())
+        .body("Login successful")
+        .unwrap();
+
+    Ok(response)
 }
+// pub async fn login(login_user: models::LoginUser, users_db: UsersDb) -> Result<impl Reply> {
+//     info!("Received login request...");
+//     let cur_user_db = users_db.lock().await;
+//     let user = match cur_user_db.get(&login_user.username) {
+//         Some(k) => k,
+//         None => {
+//             error!("User '{}' not found in database", &login_user.username);
+//             return Err(reject::custom(errors::CustomError::InvalidCredentialsError));
+//         }
+//     };
+
+//     info!("User found, verifying password...");
+//     if !security::verify_password(&login_user.password, &user.password) {
+//         error!("Password incorrect for user: {}", &login_user.username);
+//         return Err(reject::custom(errors::CustomError::InvalidCredentialsError));
+//     }
+
+//     info!("Login success!");
+//     let token = security::get_jwt_for_user(user);
+//     Ok(Response::builder().status(StatusCode::OK).body(token))
+// }
 
 // In handlers.rs, modify the get_private function
 pub async fn get_private(username: String) -> Result<impl Reply> {
