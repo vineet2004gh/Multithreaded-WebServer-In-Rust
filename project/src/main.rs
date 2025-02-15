@@ -22,7 +22,7 @@ async fn main() {
     let users_db: UsersDb = Arc::new(Mutex::new(HashMap::new()));
     // In main.rs, replace the root route with:
     let root = warp::path::end().and(warp::fs::file("./login_page.html"));
-
+    let static_files = warp::fs::dir("./static");
     let user_route = warp::path("user")
         .and(warp::post())
         .and(warp::body::json())
@@ -51,6 +51,7 @@ async fn main() {
         .or(login_route)
         .or(private_route)
         .or(admin_only_route)
+        .or(static_files)
         .with(warp::cors().allow_any_origin())
         .recover(errors::handle_rejection);
     let pool_filter = pool.clone();

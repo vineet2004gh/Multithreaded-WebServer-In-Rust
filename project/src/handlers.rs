@@ -1,6 +1,6 @@
 use crate::{errors, models, security, Result, UsersDb};
+use cookie::{Cookie, SameSite};
 use log::{error, info};
-use cookie::{Cookie,SameSite};
 use warp::{
     http::{Response, StatusCode},
     reject, Reply,
@@ -92,59 +92,8 @@ pub async fn login(login_user: models::LoginUser, users_db: UsersDb) -> Result<i
 // In handlers.rs, modify the get_private function
 pub async fn get_private(username: String) -> Result<impl Reply> {
     info!("Return private page.");
-
-    Ok(warp::reply::html(format!(
-        r#"
-        <html>
-            <head>
-                <title>Private space</title>
-                <style>
-                    .container {{ 
-                        max-width: 800px; 
-                        margin: 50px auto; 
-                        padding: 20px;
-                    }}
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>Private Area</h1>
-                    <div>Welcome, {}</div>
-                    <div>
-                        <button onclick="logout()">Logout</button>
-                        <button onclick="checkAdmin()">Admin Area</button>
-                    </div>
-                </div>
-                <script>
-                    function logout() {{
-                        localStorage.removeItem('jwt_token');
-                        window.location.href = '/';
-                    }}
-
-                    async function checkAdmin() {{
-                        try {{
-                            const response = await fetch('/admin_only', {{
-                                headers: {{
-                                    'Authorization': 'Bearer ' + localStorage.getItem('jwt_token')
-                                }}
-                            }});
-                            
-                            if (response.ok) {{
-                                const html = await response.text();
-                                document.body.innerHTML = html;
-                            }} else {{
-                                alert('Access denied');
-                            }}
-                        }} catch (error) {{
-                            console.error('Error:', error);
-                            alert('Access denied');
-                        }}
-                    }}
-                </script>
-            </body>
-        </html>
-        "#,
-        username
+    Ok(warp::reply::html(include_str!(
+        "../static/private_page.html"
     )))
 }
 

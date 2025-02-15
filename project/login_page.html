@@ -1,62 +1,48 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-    <title>Welcome to JWT Auth</title>
-    <style>
-        .container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #007bff;
-            color: white;
-            border: none;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Authentication</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
-    <div class="container">
-        <h1>Welcome</h1>
+<body class="flex items-center justify-center h-screen bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-2xl font-bold text-center mb-4 text-gray-700">Welcome to RustyGate</h1>
+
         <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
+            <div class="mb-4">
+                <label for="username" class="block text-sm font-medium text-gray-600">Username:</label>
+                <input type="text" id="username" name="username" required
+                    class="mt-1 p-2 w-full border rounded-lg focus:ring focus:ring-blue-300 outline-none">
             </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
+
+            <div class="mb-4">
+                <label for="password" class="block text-sm font-medium text-gray-600">Password:</label>
+                <input type="password" id="password" name="password" required
+                    class="mt-1 p-2 w-full border rounded-lg focus:ring focus:ring-blue-300 outline-none">
             </div>
-            <div class="form-group">
-                <label for="role">Role:</label>
-                <select id="role" name="role">
+
+            <div class="mb-4">
+                <label for="role" class="block text-sm font-medium text-gray-600">Role:</label>
+                <select id="role" name="role"
+                    class="mt-1 p-2 w-full border rounded-lg focus:ring focus:ring-blue-300 outline-none">
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                 </select>
             </div>
-            <div class="form-group">
-                <button type="button" onclick="submitForm()">Login</button>
-                <button type="button" onclick="register()">Register</button>
+
+            <div class="flex gap-3">
+                <button type="button" onclick="submitForm()"
+                    class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Login</button>
+                <button type="button" onclick="register()"
+                    class="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition">Register</button>
             </div>
         </form>
     </div>
+
     <script>
         async function submitForm() {
             const username = document.getElementById('username').value;
@@ -74,20 +60,15 @@
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password
-                    })
+                    body: JSON.stringify({ username, password })
                 });
 
                 if (response.ok) {
                     const data = await response.text();
                     localStorage.setItem('jwt_token', data);
-                    // Add authorization header for subsequent requests
+
                     const privateResponse = await fetch('/private', {
-                        headers: {
-                            'Authorization': `Bearer ${data}`
-                        }
+                        headers: { 'Authorization': `Bearer ${data}` }
                     });
 
                     if (privateResponse.ok) {
@@ -113,9 +94,7 @@
             try {
                 const response = await fetch('/user', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password, role })
                 });
 

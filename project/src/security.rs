@@ -89,21 +89,21 @@ pub fn with_auth(
     warp::cookie("jwt").and_then(move |jwt: String| {
         let required_role = required_role.clone();
         async move {
-        match decode::<models::Claims>(
-            &jwt,
-            &DecodingKey::from_secret(&get_secret()),
-            &Validation::default(),
-        ) {
-            Ok(token_data) => {
-                let claims = token_data.claims;
-                if is_authorized(required_role.clone(), &claims.role) {
-                    Ok(claims.sub)
-                } else {
-                    Err(reject::custom(errors::CustomError::NotAuthorizedError))
+            match decode::<models::Claims>(
+                &jwt,
+                &DecodingKey::from_secret(&get_secret()),
+                &Validation::default(),
+            ) {
+                Ok(token_data) => {
+                    let claims = token_data.claims;
+                    if is_authorized(required_role.clone(), &claims.role) {
+                        Ok(claims.sub)
+                    } else {
+                        Err(reject::custom(errors::CustomError::NotAuthorizedError))
+                    }
                 }
+                Err(_) => Err(reject::custom(errors::CustomError::InvalidJWTTokenError)),
             }
-            Err(_) => Err(reject::custom(errors::CustomError::InvalidJWTTokenError)),
-        }
         }
     })
 }

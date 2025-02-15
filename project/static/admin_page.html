@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="flex items-center justify-center h-screen bg-gray-100">
+    <div class="bg-white p-8 rounded-lg shadow-md text-center max-w-md w-full">
+        <h1 class="text-2xl font-bold text-gray-700">Admin only</h1>
+        <p id="username" class="text-gray-600 mt-2"></p>
+        <p id="userCount" class="text-gray-600 mt-2"></p>
+
+        <button onclick="logout()" class="mt-6 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition">
+            Logout
+        </button>
+    </div>
+
+    <script>
+        async function fetchAdminData() {
+            try {
+                const response = await fetch('/admin-data');
+                if (!response.ok) throw new Error('Failed to fetch admin data');
+
+                const data = await response.json();
+                document.getElementById('username').innerHTML = `<b>Logged in user:</b> ${data.username}`;
+                document.getElementById('userCount').innerHTML = `<b>Number of users in the database:</b> ${data.user_count}`;
+            } catch (error) {
+                console.error(error);
+                document.getElementById('username').innerText = 'Error fetching data';
+            }
+        }
+
+        function logout() {
+            document.cookie = "jwt=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            window.location.href = '/';
+        }
+
+        fetchAdminData(); 
+    </script>
+</body>
+
+</html>
