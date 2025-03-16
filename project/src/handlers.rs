@@ -1,6 +1,8 @@
 use crate::{errors, models, security, Result, UsersDb};
+use cookie::{Cookie, SameSite};
 use log::{error, info};
-use cookie::{Cookie,SameSite};
+use std::fs;
+use std::path::Path;
 use warp::{
     http::{Response, StatusCode},
     reject, Reply,
@@ -67,106 +69,50 @@ pub async fn login(login_user: models::LoginUser, users_db: UsersDb) -> Result<i
 
     Ok(response)
 }
-// pub async fn login(login_user: models::LoginUser, users_db: UsersDb) -> Result<impl Reply> {
-//     info!("Received login request...");
-//     let cur_user_db = users_db.lock().await;
-//     let user = match cur_user_db.get(&login_user.username) {
-//         Some(k) => k,
-//         None => {
-//             error!("User '{}' not found in database", &login_user.username);
-//             return Err(reject::custom(errors::CustomError::InvalidCredentialsError));
-//         }
-//     };
 
-//     info!("User found, verifying password...");
-//     if !security::verify_password(&login_user.password, &user.password) {
-//         error!("Password incorrect for user: {}", &login_user.username);
-//         return Err(reject::custom(errors::CustomError::InvalidCredentialsError));
-//     }
-
-//     info!("Login success!");
-//     let token = security::get_jwt_for_user(user);
-//     Ok(Response::builder().status(StatusCode::OK).body(token))
-// }
-
-// In handlers.rs, modify the get_private function
 pub async fn get_private(username: String) -> Result<impl Reply> {
     info!("Return private page.");
 
-    Ok(warp::reply::html(format!(
-        r#"
-        <html>
-            <head>
-                <title>Private space</title>
-                <style>
-                    .container {{ 
-                        max-width: 800px; 
-                        margin: 50px auto; 
-                        padding: 20px;
-                    }}
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>Private Area</h1>
-                    <div>Welcome, {}</div>
-                    <div>
-                        <button onclick="logout()">Logout</button>
-                        <button onclick="checkAdmin()">Admin Area</button>
-                    </div>
-                </div>
-                <script>
-                    function logout() {{
-                        localStorage.removeItem('jwt_token');
-                        window.location.href = '/';
-                    }}
+    let template_path =
+        Path::new("d:/Rust/Multithreaded-WebServer-In-Rust/project/private_page.html");
 
-                    async function checkAdmin() {{
-                        try {{
-                            const response = await fetch('/admin_only', {{
-                                headers: {{
-                                    'Authorization': 'Bearer ' + localStorage.getItem('jwt_token')
-                                }}
-                            }});
-                            
-                            if (response.ok) {{
-                                const html = await response.text();
-                                document.body.innerHTML = html;
-                            }} else {{
-                                alert('Access denied');
-                            }}
-                        }} catch (error) {{
-                            console.error('Error:', error);
-                            alert('Access denied');
-                        }}
-                    }}
-                </script>
-            </body>
-        </html>
-        "#,
-        username
-    )))
+    match fs::read_to_string(template_path) {
+        Ok(template) => {
+            // Replace the placeholder with the username
+            let html = template.replace("{}", &username);
+
+            // Return successful response with the HTML content
+            Ok(warp::reply::html(html))
+        }
+        Err(_) => {
+            // Return error response if template file cannot be read
+            Err(reject::custom(errors::CustomError::InternalError))
+        }
+    }
 }
 
 pub async fn get_admin_only(users_db: UsersDb, username: String) -> Result<impl Reply> {
     info!("Return admin only page.");
 
-    Ok(warp::reply::html(format!(
-        r#"
-    <html>
-        <head>
-            <title>Public space</title>
-        <head>
-        <body>
-            <h1>Admin only</h1>
-            <div>Logged in user: {}</div>
-            <div>
-                <b>Number of users in the database: {}</b>
-            </div>
-        </body>
-    </html>
-    "#,
-        &username,
-        users_db.lock().await.len()
-    )))
+    let template_path =
+        Path::new("d:/Rust/Multithreaded-WebServer-In-Rust/project/admin_only.html");
+
+    match fs::read_to_string(template_path) {
+        Ok(template) => {
+            // Replace the placeholder with the username and user count
+            let html = template.replacen("{}", &username, 1).replacen(
+                "{}",
+                &users_db.lock().await.len().to_string(),
+                1,
+            );
+
+            // Return successful response with the HTML content
+            Ok(warp::reply::html(html))
+        }
+        Err(_) => {
+            // Return error response if template file cannot be read
+            error!("Failed to read admin_only.html template");
+            Err(reject::custom(errors::CustomError::InternalError))
+        }
+    }
 }

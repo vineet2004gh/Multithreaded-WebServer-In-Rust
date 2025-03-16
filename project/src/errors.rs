@@ -26,6 +26,15 @@ pub enum CustomError {
 
 impl warp::reject::Reject for CustomError {}
 
+#[derive(Debug)]
+pub enum AuthError {
+    NoToken,
+    InvalidToken,
+    // ... other existing auth errors ...
+}
+
+impl warp::reject::Reject for AuthError {}
+
 #[derive(Serialize, Debug)]
 struct ErrorResponse {
     message: String,
@@ -72,6 +81,18 @@ pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply,
             _ => {
                 return Ok(reply_with_status(StatusCode::BAD_REQUEST, &e.to_string()));
             }
+        }
+    } else if let Some(e) = err.find::<AuthError>() {
+        match e {
+            AuthError::NoToken => {
+                return Ok(reply_with_status(
+                    StatusCode::UNAUTHORIZED,
+                    "No Token Provided",
+                ));
+            }
+            AuthError::InvalidToken => {
+                return Ok(reply_with_status(StatusCode::UNAUTHORIZED, "Invalid Token"));
+            } // ... handle other auth errors ...
         }
     } else if err.find::<warp::reject::MethodNotAllowed>().is_some() {
         return Ok(reply_with_status(
