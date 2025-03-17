@@ -8,37 +8,44 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 class="text-2xl font-bold text-center mb-4 text-gray-700">Welcome to RustyGate</h1>
+<body class="bg-gray-50 h-screen flex items-center justify-center">
+
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg">
+        <h1 class="text-3xl font-semibold text-center mb-6 text-gray-800">Welcome to RustyGate</h1>
 
         <form id="loginForm">
-            <div class="mb-4">
-                <label for="username" class="block text-sm font-medium text-gray-600">Username:</label>
+            <!-- Username Input -->
+            <div class="mb-6">
+                <label for="username" class="block text-sm font-medium text-gray-700">Username:</label>
                 <input type="text" id="username" name="username" required
-                    class="mt-1 p-2 w-full border rounded-lg focus:ring focus:ring-blue-300 outline-none">
+                    class="mt-1 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
             </div>
 
-            <div class="mb-4">
-                <label for="password" class="block text-sm font-medium text-gray-600">Password:</label>
+            <!-- Password Input -->
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password:</label>
                 <input type="password" id="password" name="password" required
-                    class="mt-1 p-2 w-full border rounded-lg focus:ring focus:ring-blue-300 outline-none">
+                    class="mt-1 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
             </div>
 
-            <div class="mb-4">
-                <label for="role" class="block text-sm font-medium text-gray-600">Role:</label>
-                <select id="role" name="role"
-                    class="mt-1 p-2 w-full border rounded-lg focus:ring focus:ring-blue-300 outline-none">
+            <!-- Role Selection -->
+            <div class="mb-6">
+                <label for="role" class="block text-sm font-medium text-gray-700">Role:</label>
+                <select id="role" name="role" class="mt-1 p-3 w-full border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                 </select>
             </div>
 
-            <div class="flex gap-3">
+            <!-- Buttons in the same line -->
+            <div class="flex gap-4">
+                <!-- Login Button -->
                 <button type="button" onclick="submitForm()"
-                    class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Login</button>
+                    class="w-full py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all">Login</button>
+
+                <!-- Register Button -->
                 <button type="button" onclick="register()"
-                    class="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition">Register</button>
+                    class="w-full py-3 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 transition-all">Register</button>
             </div>
         </form>
     </div>

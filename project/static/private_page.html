@@ -8,20 +8,24 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="bg-white p-8 rounded-lg shadow-md text-center max-w-md w-full">
-        <h1 class="text-2xl font-bold text-gray-700">Welcome to the User Page!</h1>
-        <p class="text-gray-600 mt-2">You have successfully authenticated.</p>
+<body class="bg-gray-200 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-10 rounded-lg shadow-xl text-center max-w-md w-full">
+        <h1 class="text-3xl font-semibold text-gray-800">Welcome to the User Page!</h1>
+        <p class="text-gray-600 mt-2 text-lg">You have successfully authenticated.</p>
 
         <!-- Admin button (Initially hidden) -->
         <button id="admin-btn" onclick="goToAdmin()"
-            class="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition hidden">
+            class="mt-6 bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all hidden">
             Admin Area
         </button>
 
-        <button onclick="logout()" class="mt-6 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition">
-            Logout
-        </button>
+        <div class="mt-8">
+            <button onclick="logout()" 
+                class="w-full py-3 text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:ring-red-300 transition-all">
+                Logout
+            </button>
+        </div>
     </div>
 
     <script>
