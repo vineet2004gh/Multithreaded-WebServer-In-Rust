@@ -1,0 +1,32 @@
+# Server configuration for the web application
+
+[server]
+host = "127.0.0.1"
+port = 8080
+threads = 4
+
+[templating]
+# List of template variables to be replaced in HTML
+variables = [
+    "PORT",
+    "THREAD_ID",
+    "SERVER_ADDRESS",
+    "UPSTREAM_SERVER",
+    "REQUEST_ID",
+    "PROXY_DISPLAY",
+    "LOAD_BALANCED",
+]
+
+[reverse_proxy]
+enabled = true
+proxy_path = "/api" # Requests to this path will be proxied
+
+[load_balancing]
+enabled = true
+type = "round_robin"
+upstream_servers = [
+    "http://127.0.0.1:8447",
+    "http://127.0.0.1:8448",
+    "http://127.0.0.1:8449",
+    "http://127.0.0.1:8450",
+]

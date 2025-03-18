@@ -74,7 +74,7 @@ pub async fn get_private(username: String) -> Result<impl Reply> {
     info!("Return private page.");
 
     let template_path =
-        Path::new("d:/Rust/Multithreaded-WebServer-In-Rust/project/private_page.html");
+        Path::new("e:/Rust/Multithreaded-WebServer-In-Rust/project/private_page.html");
 
     match fs::read_to_string(template_path) {
         Ok(template) => {
@@ -95,7 +95,7 @@ pub async fn get_admin_only(users_db: UsersDb, username: String) -> Result<impl 
     info!("Return admin only page.");
 
     let template_path =
-        Path::new("d:/Rust/Multithreaded-WebServer-In-Rust/project/admin_only.html");
+        Path::new("e:/Rust/Multithreaded-WebServer-In-Rust/project/admin_only.html");
 
     match fs::read_to_string(template_path) {
         Ok(template) => {

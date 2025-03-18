@@ -1,209 +1,251 @@
+<!DOCTYPE html>
 <html>
-
-<head>
-    <title>Welcome to JWT Auth</title>
+  <head>
+    <title>Login Page - Port {{PORT}}</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f7fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
 
+      .container {
+        max-width: 400px;
+        margin: 80px auto;
+        padding: 30px;
+        border-radius: 8px;
+        background-color: white;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      .container:hover {
+        transform: translateY(-5px);
+      }
+
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 30px;
+        font-weight: 500;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #2c3e50;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        font-size: 16px;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        outline: none;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      button {
+        flex: 1;
+        padding: 12px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        transition: background-color 0.3s, transform 0.2s;
+      }
+
+      button:hover {
+        background: #2980b9;
+        transform: translateY(-2px);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      button[onclick="register()"] {
+        background: #2ecc71;
+      }
+
+      button[onclick="register()"]:hover {
+        background: #27ae60;
+      }
+
+      @media (max-width: 480px) {
         .container {
-            max-width: 400px;
-            margin: 80px auto;
-            padding: 30px;
-            border-radius: 8px;
-            background-color: white;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+          margin: 40px 20px;
+          padding: 20px;
         }
+      }
 
-        .container:hover {
-            transform: translateY(-5px);
-        }
+      .port-info {
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        border-left: 5px solid #007bff;
+        /* Use a default value that will be replaced server-side */
+        display: block;
+      }
 
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-weight: 500;
-        }
+      .proxy-info {
+        background-color: #e8f5e9;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        border-left: 5px solid #4caf50;
+        display: none; /* Default value, will be overridden by inline style if needed */
+      }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+      .server-detail {
+        font-size: 14px;
+        margin-top: 5px;
+        color: #555;
+      }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #2c3e50;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 12px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            transition: border-color 0.3s, box-shadow 0.3s;
-            font-size: 16px;
-        }
-
-        input:focus,
-        select:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-            outline: none;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            flex: 1;
-            padding: 12px;
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-
-        button:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button[onclick="register()"] {
-            background: #2ecc71;
-        }
-
-        button[onclick="register()"]:hover {
-            background: #27ae60;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                margin: 40px 20px;
-                padding: 20px;
-            }
-        }
+      .load-balanced {
+        background-color: #fff8e1;
+        border-left: 5px solid #ffc107;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
+    <div class="port-info {{LOAD_BALANCED}}">
+      <h2>You are connected to server on port {{PORT}}</h2>
+      <p>Thread ID: {{THREAD_ID}}</p>
+      <p class="server-detail">Server Address: {{SERVER_ADDRESS}}</p>
+    </div>
+
+    <div class="proxy-info" style="display: '{{PROXY_DISPLAY}}'">
+      <h3>Reverse Proxy Information</h3>
+      <p>This request was handled by the load balancer using Round Robin</p>
+      <p class="server-detail">Upstream Server: {{UPSTREAM_SERVER}}</p>
+      <p class="server-detail">Request ID: {{REQUEST_ID}}</p>
+    </div>
+
     <div class="container">
-        <h1>Welcome</h1>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <div class="form-group">
-                <label for="role">Role:</label>
-                <select id="role" name="role">
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                </select>
-            </div>
-            <div class="form-group button-group">
-                <button type="button" onclick="submitForm()">Login</button>
-                <button type="button" onclick="register()">Register</button>
-            </div>
-        </form>
+      <h1>Welcome</h1>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" name="username" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+        <div class="form-group">
+          <label for="role">Role:</label>
+          <select id="role" name="role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-group button-group">
+          <button type="button" onclick="submitForm()">Login</button>
+          <button type="button" onclick="register()">Register</button>
+        </div>
+      </form>
     </div>
     <script>
-        async function submitForm() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+      async function submitForm() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
 
-            if (!username || !password) {
-                alert('Please fill in all fields');
-                return;
-            }
-
-            try {
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password
-                    })
-                });
-
-                if (response.ok) {
-                    const data = await response.text();
-                    localStorage.setItem('jwt_token', data);
-                    // Add authorization header for subsequent requests
-                    const privateResponse = await fetch('/private', {
-                        headers: {
-                            'Authorization': `Bearer ${data}`
-                        }
-                    });
-
-                    if (privateResponse.ok) {
-                        window.location.href = '/private';
-                    } else {
-                        throw new Error('Failed to access private page');
-                    }
-                } else {
-                    const errorData = await response.text();
-                    alert(`Login failed: ${errorData}`);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert(`Login failed: ${error.message}`);
-            }
+        if (!username || !password) {
+          alert("Please fill in all fields");
+          return;
         }
 
-        async function register() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const role = document.getElementById('role').value;
+        try {
+          const response = await fetch("/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              username: username,
+              password: password,
+            }),
+          });
 
-            try {
-                const response = await fetch('/user', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username, password, role })
-                });
+          if (response.ok) {
+            const data = await response.text();
+            localStorage.setItem("jwt_token", data);
+            // Add authorization header for subsequent requests
+            const privateResponse = await fetch("/private", {
+              headers: {
+                Authorization: `Bearer ${data}`,
+              },
+            });
 
-                if (response.ok) {
-                    alert('Registration successful! Please login.');
-                } else {
-                    alert('Registration failed');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Registration failed');
+            if (privateResponse.ok) {
+              window.location.href = "/private";
+            } else {
+              throw new Error("Failed to access private page");
             }
+          } else {
+            const errorData = await response.text();
+            alert(`Login failed: ${errorData}`);
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert(`Login failed: ${error.message}`);
         }
+      }
+
+      async function register() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const role = document.getElementById("role").value;
+
+        try {
+          const response = await fetch("/user", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password, role }),
+          });
+
+          if (response.ok) {
+            alert("Registration successful! Please login.");
+          } else {
+            alert("Registration failed");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("Registration failed");
+        }
+      }
     </script>
-</body>
-
+  </body>
 </html>

@@ -1,0 +1,7 @@
+{
+  "terminal.explorerKind": "both",
+  "terminal.integrated.defaultProfile.windows": "Windows PowerShell",
+  "terminal.integrated.env.windows": {
+    
+  }
+}
