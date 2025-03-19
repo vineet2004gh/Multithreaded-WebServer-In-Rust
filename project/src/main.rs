@@ -3,13 +3,16 @@ use std::{collections::HashMap, convert::Infallible, fs, sync::Arc};
 use tokio::sync::Mutex;
 use warp::{Filter, Rejection};
 
+mod db;
 mod errors;
 mod handlers;
 mod models;
 mod proxy_server;
+mod schema;
 mod security;
-mod template_handler; // Add the template_handler module
+mod template_handler;
 mod threadpool;
+
 type UsersDb = Arc<Mutex<HashMap<String, models::User>>>;
 type Result<T> = std::result::Result<T, Rejection>;
 
@@ -18,6 +21,10 @@ async fn main() {
     dotenv::dotenv().ok();
     log4rs::init_file("logconfig.yml", Default::default()).expect("Log config file not found.");
     info!("Starting server...");
+
+    // Initialize database connection pool
+    let db_pool = db::init_pool();
+    info!("Database connection pool initialized");
 
     // Start the proxy server in a separate task
     tokio::spawn(proxy_server::start_proxy_server());
@@ -56,14 +63,13 @@ async fn main() {
 
     let num_threads = 4;
     let base_port = 8447;
-    let users_db: UsersDb = Arc::new(Mutex::new(HashMap::new()));
 
     let mut join_handles = Vec::new();
 
     // Start individual web servers on different ports
     for thread_id in 0..num_threads {
         let port = base_port + thread_id;
-        let users_db = users_db.clone();
+        let db_pool = db_pool.clone();
         let load_balancer = load_balancer.clone();
 
         // Create a new route for each port
@@ -97,16 +103,19 @@ async fn main() {
                 warp::reply::html(html_content)
             });
 
+            // Filter for passing db pool to handlers
+            let db_filter = warp::any().map(move || db_pool.clone());
+
             let user_route = warp::path("user")
                 .and(warp::post())
                 .and(warp::body::json())
-                .and(with_users_db(users_db.clone()))
+                .and(db_filter.clone())
                 .and_then(handlers::create_user);
 
             let login_route = warp::path("login")
                 .and(warp::post())
                 .and(warp::body::json())
-                .and(with_users_db(users_db.clone()))
+                .and(db_filter.clone())
                 .and_then(handlers::login);
 
             let private_route = warp::path("private")
@@ -116,7 +125,7 @@ async fn main() {
 
             let admin_only_route = warp::path("admin_only")
                 .and(warp::get())
-                .and(with_users_db(users_db.clone()))
+                .and(db_filter.clone())
                 .and(security::with_auth(security::Role::Admin))
                 .and_then(handlers::get_admin_only);
 
@@ -141,10 +150,4 @@ async fn main() {
             eprintln!("Server thread error: {}", e);
         }
     }
-}
-
-fn with_users_db(
-    users_db: UsersDb,
-) -> impl Filter<Extract = (UsersDb,), Error = Infallible> + Clone {
-    warp::any().map(move || users_db.clone())
 }
