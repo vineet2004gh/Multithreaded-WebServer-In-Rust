@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RustyGate</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <h1>RustyGate</h1>
+
+    <div class="container">
+        <!-- Feature 1: Proxy Server -->
+<div class="feature" id="proxy-server">
+    <h2>Feature 1: Proxy Server</h2>
+    
+    <!-- Proxy Server Diagram -->
+    <div class="proxy-diagram">
+        <div class="row top-row">
+            <div class="client-icon" id="proxy-client">👨🏻</div>
+            <div class="red-line"></div>
+            <div class="box server-box" id="main-server">Main Server</div>
+        </div>
+
+        <div class="row bottom-row">
+            <div class="box proxy-box" id="proxy-box">Proxy Server</div>
+            <div class="blue-line left-diagonal"></div>
+            <div class="blue-line right-diagonal"></div>
+        </div>
+    </div>
+    <div class="button-container">
+        <button id="simulate-proxy-btn" onclick="simulateProxyRequest()">Simulate</button>
+    </div>
+    <div class="proxy-legend">
+        <div class="legend-item">
+            <div class="dotted-line"></div>
+            <span>Client thinks</span>
+        </div>
+        <div class="legend-item">
+            <div class="solid-line"></div>
+            <span>Actual path</span>
+        </div>
+    </div>
+    
+</div>
+
+        
+        <!-- Feature 2: Multithreading -->
+        <div class="feature" id="multithreading">
+            <h2>Feature 2: Multithreading</h2>
+
+            <div class="multithreading-diagram">
+                <div class="box client-box" id="client-box">Client</div>
+                <div class="arrow-horizontal"></div>
+
+                <div class="box server-box" id="server-box">Main Server</div>
+
+                <div class="thread-container">
+                    <div class="box thread-box" id="thread-1">Thread 1</div>
+                    <div class="box thread-box" id="thread-2">Thread 2</div>
+                    <div class="box thread-box" id="thread-3">Thread 3</div>
+                    <div class="box thread-box" id="thread-4">Thread 4</div>
+                </div>
+            </div>
+
+            <button id="simulate-btn" onclick="simulateRequest()">Simulate</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
