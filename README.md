@@ -121,7 +121,6 @@ Logs are configured in `logconfig.yml`. By default, logs are written to:
 1. **Port Conflicts**: If you see port binding errors, ensure no other services are using ports 8080 or 8447-8450
 2. **Database Migrations**: If migrations fail, try running `diesel migration redo`
 3. **Environment Variables**: Ensure `.env` file is properly formatted and in the correct location
-=======
 # 🦀RustyGate: The Multi-Threaded Web Server🚀
 
 ## 🔎Overview
