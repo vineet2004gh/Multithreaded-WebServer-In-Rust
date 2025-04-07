@@ -1,6 +1,5 @@
 use log::info;
-use std::{collections::HashMap, convert::Infallible, fs, sync::Arc};
-use tokio::sync::Mutex;
+use std::{fs, sync::Arc};
 use warp::{Filter, Rejection};
 
 mod db;
@@ -11,9 +10,7 @@ mod proxy_server;
 mod schema;
 mod security;
 mod template_handler;
-mod threadpool;
 
-type UsersDb = Arc<Mutex<HashMap<String, models::User>>>;
 type Result<T> = std::result::Result<T, Rejection>;
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 8)]
@@ -79,7 +76,7 @@ async fn main() {
                 let server_address = format!("127.0.0.1:{}", port);
 
                 // Create template values
-                let mut template_values = template_handler::create_template_values(
+                let template_values = template_handler::create_template_values(
                     port,
                     &thread_id.to_string(),
                     &server_address,

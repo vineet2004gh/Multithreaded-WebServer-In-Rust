@@ -1,4 +1,4 @@
-use crate::models::{CreateUser, NewUser, User};
+use crate::models::{NewUser, User};
 use crate::schema::users;
 use crate::schema::users::dsl::*;
 use diesel::{
@@ -6,7 +6,7 @@ use diesel::{
     r2d2::{self, ConnectionManager, Pool, PooledConnection},
     ExpressionMethods, QueryDsl, RunQueryDsl,
 };
-use log::{debug, error, info};
+use log::error;
 use std::env;
 
 pub type DbPool = Pool<ConnectionManager<PgConnection>>;
@@ -42,10 +42,6 @@ impl UserRepository {
         diesel::insert_into(users::table)
             .values(new_user)
             .get_result::<User>(conn)
-    }
-
-    pub fn get_all_users(conn: &mut DbConnection) -> Result<Vec<User>, diesel::result::Error> {
-        users.load::<User>(conn)
     }
 
     pub fn count_users(conn: &mut DbConnection) -> i64 {

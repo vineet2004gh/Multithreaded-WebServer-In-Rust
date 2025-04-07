@@ -14,26 +14,11 @@ pub enum CustomError {
     UserExistsError(String),
     #[error("invalid jwt token")]
     InvalidJWTTokenError,
-    #[error("jwt token creation error")]
-    JWTTokenCreationError,
-    #[error("authorization header required")]
-    AuthHeaderRequiredError,
-    #[error("invalid auth header")]
-    InvalidAuthHeaderError,
     #[error("not authorized")]
     NotAuthorizedError,
 }
 
 impl warp::reject::Reject for CustomError {}
-
-#[derive(Debug)]
-pub enum AuthError {
-    NoToken,
-    InvalidToken,
-    // ... other existing auth errors ...
-}
-
-impl warp::reject::Reject for AuthError {}
 
 #[derive(Serialize, Debug)]
 struct ErrorResponse {
@@ -72,27 +57,9 @@ pub async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply,
             CustomError::InvalidJWTTokenError => {
                 return Ok(reply_with_status(StatusCode::UNAUTHORIZED, &e.to_string()));
             }
-            CustomError::JWTTokenCreationError => {
-                return Ok(reply_with_status(
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "Internal Server Error",
-                ));
-            }
             _ => {
                 return Ok(reply_with_status(StatusCode::BAD_REQUEST, &e.to_string()));
             }
-        }
-    } else if let Some(e) = err.find::<AuthError>() {
-        match e {
-            AuthError::NoToken => {
-                return Ok(reply_with_status(
-                    StatusCode::UNAUTHORIZED,
-                    "No Token Provided",
-                ));
-            }
-            AuthError::InvalidToken => {
-                return Ok(reply_with_status(StatusCode::UNAUTHORIZED, "Invalid Token"));
-            } // ... handle other auth errors ...
         }
     } else if err.find::<warp::reject::MethodNotAllowed>().is_some() {
         return Ok(reply_with_status(

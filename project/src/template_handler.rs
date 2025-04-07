@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::fs;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::Arc;
 use std::thread;
 
 /// Process an HTML template by replacing placeholders with values

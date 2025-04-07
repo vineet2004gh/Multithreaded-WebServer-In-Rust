@@ -1,6 +1,5 @@
 use hyper::{Body, Client, Request, Uri};
 use log::info;
-use serde::Deserialize;
 use std::{
     fs,
     sync::{
@@ -9,13 +8,6 @@ use std::{
     },
 };
 use warp::{http, Filter, Rejection, Reply};
-
-#[derive(Deserialize, Clone)]
-pub struct ProxyConfig {
-    pub mode: String,
-    pub port: u16,
-    pub upstream_servers: Vec<String>,
-}
 
 pub struct RoundRobinBalancer {
     servers: Vec<String>,
