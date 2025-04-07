@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Multithreaded-WebServer-In-Rust
 
 A high-performance, multithreaded web server built with Rust featuring user authentication, role-based access control, and load balancing capabilities.
@@ -221,4 +220,4 @@ Developed by **Team RustyGate**:
 - Pal Patel
 - Srishti
 - Jeferson
->>>>>>> 5d7619ced91d3cbe8c0ac2692d70d59570a55c0a
+
