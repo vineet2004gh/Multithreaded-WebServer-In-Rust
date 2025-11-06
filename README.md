@@ -1,216 +1,263 @@
-# Multithreaded-WebServer-In-Rust
+# Multithreaded WebServer in Rust
 
-A high-performance, multithreaded web server built with Rust featuring user authentication, role-based access control, and load balancing capabilities.
+A high-performance, multithreaded web server built with Rust featuring JWT-based authentication, role-based access control (RBAC), PostgreSQL integration with Diesel ORM, and reverse proxy load balancing.
 
-## Features
+## 🌟 Features
 
-- Multithreaded architecture using Tokio and threadpool
-- User authentication with JWT tokens
-- Role-based access control (User/Admin roles)
-- Database integration with PostgreSQL using Diesel ORM
-- Load balancing with round-robin algorithm
-- Reverse proxy functionality using Hyper
-- Template-based HTML rendering
-- Comprehensive logging with log4rs
-- Secure password hashing with scrypt
-- Cookie-based session management
+- **Multithreaded Architecture**: 4 worker threads running on ports 8447-8450, each handling HTTP requests independently
+- **Reverse Proxy & Load Balancing**: Round-robin load balancer on port 8080 distributing requests across worker threads
+- **JWT Authentication**: Secure token-based user authentication with configurable expiration (60 seconds)
+- **Role-Based Access Control (RBAC)**: User and Admin roles with differentiated access levels
+- **PostgreSQL Database**: User data persistence using Diesel ORM with R2D2 connection pooling
+- **Secure Password Hashing**: Scrypt-based password hashing with random salt generation
+- **Comprehensive Logging**: log4rs configured logging for debugging and monitoring
+- **Cookie-Based Session Management**: HTTP-only, SameSite=Lax cookies for secure session handling
+- **Custom Error Handling**: Application-specific error types with appropriate HTTP status codes
 
-## Prerequisites
+## 📋 Prerequisites
 
 - Rust (latest stable version)
-- PostgreSQL database server
-- Diesel CLI (`cargo install diesel_cli --no-default-features --features postgres`)
+- PostgreSQL 12+
+- Diesel CLI: `cargo install diesel_cli --no-default-features --features postgres`
 
-## Setup Instructions
+## 🚀 Setup Instructions
 
 ### 1. Database Setup
 
-1. Install PostgreSQL and create a new database:
+Create PostgreSQL database:
 
-   ```bash
-   createdb users_db
-   ```
+```bash
+createdb users_db
+```
 
-2. Update the database connection string in `.env` file:
+### 2. Environment Configuration
 
-   ```
-   DATABASE_URL = "postgres://username:password@localhost:5432/users_db"
-   ```
+Copy `.env.example` to `.env` and update with your credentials:
 
-   Replace `username` and `password` with your PostgreSQL credentials.
+```bash
+cp project/.env.example project/.env
+```
 
-3. Run the database migrations:
-   ```bash
-   cd project
-   diesel migration run
-   ```
+Update `project/.env`:
 
-### 2. Configuration
+```env
+JWT_SECRET="your-secret-key-here"
+DATABASE_URL="postgres://postgres:password@localhost:5432/users_db"
+```
 
-The server can be configured through multiple configuration files:
-
-- `logconfig.yml` - Logging configuration
-- `.env` - Environment variables and database configuration
-- `diesel.toml` - Diesel ORM configuration
-
-### 3. Running the Server
+### 3. Database Migrations
 
 ```bash
 cd project
-cargo run
+diesel migration run
 ```
 
-The server will start multiple instances on different ports (default: 8447-8450) and the reverse proxy will be available on port 8080.
+This creates the `users` table with columns: `id`, `username`, `password`, `role`, `created_at`.
 
-## Project Structure
+### 4. Build & Run
 
-- `src/main.rs` - Server initialization and threading logic
-- `src/db.rs` - Database connection and operations using Diesel
-- `src/handlers.rs` - HTTP request handlers using Warp
-- `src/security.rs` - Authentication and authorization with JWT
-- `src/errors.rs` - Custom error types and error handling
-- `src/models.rs` - Data models and structures
-- `src/proxy_server.rs` - Reverse proxy implementation using Hyper
-- `src/template_handler.rs` - HTML template processing
-- `src/schema.rs` - Database schema definitions
-- `src/config/` - Configuration files
+```bash
+cd project
+cargo build --release
+cargo run --release
+```
 
-## Authentication Flow
+The server will start:
+- Worker threads on ports **8447-8450**
+- Reverse proxy on port **8080**
 
-1. Register a user at `/user` endpoint (POST)
-2. Login at `/login` endpoint (POST)
-3. Access protected routes:
-   - `/private` - Available to all authenticated users
-   - `/admin_only` - Available only to users with Admin role
+## 📁 Project Structure
 
-## Dependencies
+```
+src/
+├── main.rs                 # Server initialization, thread spawning, route configuration
+├── db.rs                   # PostgreSQL connection pool and UserRepository
+├── handlers.rs             # HTTP handlers (login, register, private, admin routes)
+├── security.rs             # JWT token generation, password hashing, RBAC logic
+├── models.rs               # Data structures (User, Claims, CreateUser, LoginUser)
+├── proxy_server.rs         # Reverse proxy and round-robin load balancer
+├── template_handler.rs     # HTML template processing and placeholder replacement
+├── errors.rs               # Custom error types and rejection handling
+├── schema.rs               # Diesel ORM schema definitions
+└── config/
+    └── server_config.toml  # Server configuration (ports, load balancing, reverse proxy)
 
-The project uses several key dependencies:
+migrations/
+└── 2025-03-18-192310_users_db/
+    ├── up.sql              # Create users table
+    └── down.sql            # Drop users table
 
-- `tokio` - Asynchronous runtime
-- `warp` - Web framework
-- `hyper` - HTTP client/server
-- `diesel` - PostgreSQL ORM
-- `jsonwebtoken` - JWT handling
-- `log4rs` - Logging framework
-- `scrypt` - Password hashing
-- `serde` - Serialization/deserialization
+HTML/
+├── login_page.html         # Login/registration page (served on each worker)
+├── private_page.html       # User-accessible protected page
+└── admin_only.html         # Admin-only dashboard
+```
 
-## Troubleshooting
+## 🔐 Authentication & Authorization Flow
 
-### Database Connection Issues
+### Registration/Login Flow
 
-If you encounter database connection errors, verify:
+1. **Register**: POST `/user`
+   ```json
+   {
+     "username": "user123",
+     "password": "securepass",
+     "role": "user"
+   }
+   ```
+   - Password is hashed using Scrypt with random salt
+   - User stored in PostgreSQL
 
-1. PostgreSQL is running
-2. Database credentials in `.env` file are correct
-3. The database `users_db` exists
-4. User has proper permissions
+2. **Login**: POST `/login`
+   ```json
+   {
+     "username": "user123",
+     "password": "securepass"
+   }
+   ```
+   - Password verified against stored hash using Scrypt
+   - JWT token generated and set as HTTP-only cookie
+   - Token includes username, role, and 60-second expiration
 
-Error message: `FATAL: password authentication failed for user "postgres"` indicates incorrect password in your DATABASE_URL.
+3. **Access Protected Routes**:
+   - `/private` - GET (User or Admin)
+   - `/admin_only` - GET (Admin only)
+   - JWT validated from cookie on each request
+   - Role-based authorization enforced (Admin role bypasses User checks)
 
-### Logging
+## 🔄 Architecture Details
 
-Logs are configured in `logconfig.yml`. By default, logs are written to:
+### Thread Model
 
-- Console output
-- File logs in the project directory
+- **4 Worker Threads**: Each listening on different port (8447-8450)
+- **Proxy Thread**: Reverse proxy on port 8080 using Hyper client
+- **Tokio Runtime**: Multi-threaded async runtime (4 worker threads) powering all HTTP servers
+- **Connection Pooling**: R2D2 manages PostgreSQL connections across threads
 
-### Common Issues
+### Load Balancing
 
-1. **Port Conflicts**: If you see port binding errors, ensure no other services are using ports 8080 or 8447-8450
-2. **Database Migrations**: If migrations fail, try running `diesel migration redo`
-3. **Environment Variables**: Ensure `.env` file is properly formatted and in the correct location
-# 🦀RustyGate: The Multi-Threaded Web Server🚀
+- **Algorithm**: Round-robin via atomic counter increment per request
+- **Balancer Location**: Reverse proxy distributes traffic to 4 worker instances
+- **Upstream Servers**: Configured in `src/config/server_config.toml`
+- **Request Routing**: All requests to port 8080 are balanced across 8447-8450
 
-## 🔎Overview
-This project is a high-performance **multi-threaded web server** built in the fundamental structure of Rust. It features authentication using JSONWebToken, reverse proxying, load balancing, and a simple PostgreSQL backend. The server efficiently handles multiple requests using a thread pool, ensuring scalability and responsiveness. Implementation on Rust offers high performance, memory safety, and fearless concurrency without needing a garbage collector and with its powerful async ecosystem and strict compile-time checks make it perfect for building a secure, scalable, and efficient multi-threaded web server preventing from possible DoS attacks. 
+### Security Implementation
 
-## 🌟Features
-- **Multi-threading**: Uses a thread pool for efficient request handling.
-- **JWT Authentication**: Secure user authentication with JSON Web Tokens.
-- **Reverse Proxy & Load Balancing**: Distributes incoming requests to backend servers.
-- **PostgreSQL Integration**: Stores user data securely.
-- **Error Handling**: Manages HTTP status codes and application errors gracefully.
-- **User & Admin Roles**:
-  - Users access a public page.
-  - Admins have access to a protected section.
+| Feature | Implementation |
+|---------|----------------|
+| **Password Hashing** | Scrypt with random salt (OsRng) |
+| **Token Generation** | HMAC-SHA256 with 60-second expiration |
+| **Session Storage** | HTTP-only, SameSite=Lax cookies |
+| **Authorization** | Role comparison (Admin bypasses User checks) |
+| **CORS** | Allow any origin (configurable) |
 
-## 📐Project Structure
-The project is organized into several modules:
-- `main.rs`: Initializes the server, sets up logging, starts the proxy server, and manages the thread pool.
-- `db.rs`: Manages PostgreSQL database connections and queries using Diesel.
-- `errors.rs`: Defines custom error types and handling logic.
-- `handlers.rs`: Contains API request handlers for authentication and user management.
-- `models.rs`: Defines data structures for users and authentication.
-- `proxy_server.rs`: Implements the reverse proxy and load balancing.
-- `schema.rs`: Defines database table mappings for Diesel ORM.
-- `security.rs`: Handles JWT authentication and password hashing.
-- `template_handler.rs`: Renders HTML templates for the website.
-- `threadpool.rs`: Implements the custom thread pool for handling concurrent requests.
+## 📝 API Endpoints
 
-## 📜Dependencies
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/` | None | Login page with server info |
+| POST | `/user` | None | Register new user |
+| POST | `/login` | None | Authenticate user |
+| GET | `/private` | User+ | User dashboard |
+| GET | `/admin_only` | Admin | Admin panel with user count |
+
+## ⚙️ Configuration
+
+### `src/config/server_config.toml`
+
 ```toml
-tokio = { version = "1", features = ["full"] }
-warp = "0.3"
-hyper = { version = "0.14", features = ["full", "http1", "http2", "client"] }
-hyper-tls = "0.5"
-log = "0.4"
-log4rs = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-toml = "0.5"
-jsonwebtoken = "8"
-chrono = { version = "0.4", features = ["serde"] }
-dotenv = "0.15"
-rand = "0.8"
-threadpool = "1.8"
-scrypt = "0.11.0"
-cookie = "0.18.1"
-thiserror = "2.0.12"
-diesel = { version = "2.1.0", features = ["postgres", "r2d2", "chrono"] }
-r2d2 = "0.8.10"
+[server]
+threads = 4
+port = 8080
+
+[load_balancing]
+enabled = true
+type = "round_robin"
+upstream_servers = [
+    "http://127.0.0.1:8447",
+    "http://127.0.0.1:8448",
+    "http://127.0.0.1:8449",
+    "http://127.0.0.1:8450",
+]
+
+[reverse_proxy]
+enabled = true
 ```
 
-## 🛠️🛠Installation & Setup
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/vineet2004gh/Multithreaded-WebServer-In-Rust.git
-   cd Multithreaded-WebServer-In-Rust/project
-   ```
-2. **Set up environment variables:**
-   - Create a `.env` file and specify database credentials and JWT secrets.
-3. **Install dependencies:**
-   ```sh
-   cargo build --release
-   ```
-4. **Run the server:**
-   ```sh
-   cargo run --release
-   ```
+### `logconfig.yml`
 
-## 🧲Usage
-- Open your browser and visit `http://localhost:8447`.
-- Authenticate using JWT to access protected routes.
-- Admins can log in and manage users via the admin panel.
+Configures log levels and output format. By default logs to console with timestamp and level.
 
-## ⚡API Endpoints
-- `/` - Public home page.
-- `/login_page` - User authentication.
-- `/admin_only` - Protected admin route (requires JWT token).
-- `/private_page` - Fetch user details (protected).
+## 🔧 Key Dependencies
 
-## 🛡️Security Features
-- **JWT Authentication**: Secure user sessions with token-based authentication.
-- **Password Hashing**: Uses `scrypt` for secure password storage.
-- **HTTPS Support**: `hyper-tls` ensures encrypted communication.
+- **tokio**: Async runtime with multi-threading support
+- **warp**: Web framework built on Hyper
+- **hyper**: HTTP client/server for proxy requests
+- **diesel**: Type-safe ORM for PostgreSQL
+- **jsonwebtoken**: JWT encoding/decoding
+- **scrypt**: Password hashing algorithm
+- **log4rs**: Structured logging framework
+- **cookie**: HTTP cookie handling with security options
 
-## 🔁Load Balancing & Reverse Proxy
-- The server distributes incoming requests across multiple backend instances.
-- `proxy_server.rs` manages load balancing to ensure optimal resource utilization.
+## 🚀 Future Scalability Options
 
-## 🤝Contributing
-Contributions and Raising Issues are welcome! Feel free to raise a pull-request!
+The current architecture provides a solid foundation for horizontal and vertical scaling. Here are potential enhancements:
+
+### 1. **Thread Pool Per Port**
+
+Instead of assigning a single Tokio task per port, implement a configurable thread pool for each worker:
+
+```toml
+[server]
+threads_per_port = 4  # Each port runs with 4 internal threads
+worker_ports = 4
+base_port = 8447
+```
+
+**Benefits**:
+- Better CPU utilization through parallel request handling
+- Improved throughput under high concurrency
+- Fine-grained control over resource allocation per port
+
+
+### 2. **Advanced Load Balancing**
+
+Enhance the current round-robin algorithm:
+
+- **Least Connections**: Route to the worker with fewest active connections
+- **Weighted Round-Robin**: Assign different weights to workers based on capacity
+- **Response Time-Based**: Route to fastest responding servers
+- **Sticky Sessions**: Route user requests to the same worker for session consistency
+
+### 4. **Caching Layer**
+
+Introduce in-memory and distributed caching:
+
+- **Redis Integration**: Cache frequently accessed data (user profiles, tokens)
+- **In-Memory Cache**: Use libraries like `moka` or `lru` for local caching
+- **Cache Invalidation**: Implement TTL-based or event-driven cache updates
+
+
+### 5. **Rate Limiting & DDoS Protection**
+
+Implement rate limiting and request throttling:
+
+- **Per-User Rate Limits**: Limit requests per user/IP address
+- **Token Bucket Algorithm**: Implement token bucket for smooth rate limiting
+- **Circuit Breaker**: Fail fast when service is overloaded
+- **Request Batching**: Batch multiple requests to reduce processing overhead
+
+### 6. **Async Authentication & Authorization**
+
+Optimize the current RBAC implementation:
+
+- **JWT Caching**: Cache token validation results temporarily
+- **Permission Caching**: Cache role-based permissions with TTL
+- **Async Token Refresh**: Background token refresh before expiration
+- **Multi-Tenant Support**: Extend RBAC for multiple organizations
+
+
+These enhancements will transform the server from handling thousands of concurrent connections to millions while maintaining low latency and high availability.
 
 ## 📚Authors & Contributors
 Developed by **Team RustyGate**:
@@ -219,4 +266,3 @@ Developed by **Team RustyGate**:
 - Pal Patel
 - Srishti
 - Jeferson
-
